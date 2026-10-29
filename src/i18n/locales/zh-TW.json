@@ -2362,6 +2362,9 @@
     "reasoning_detail": "其中包含 {{count}} 個推理 Token",
     "unclassified": "{{count}} 個未分類",
     "client_ip": "呼叫 IP",
-    "all_ips": "所有呼叫 IP"
+    "all_ips": "所有呼叫 IP",
+    "caller_local": "本機",
+    "caller_unknown": "未知",
+    "caller_label": "{{name}}（{{ip}}）"
   }
 }

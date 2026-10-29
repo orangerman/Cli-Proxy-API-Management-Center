@@ -5,6 +5,7 @@ import { Select } from '@/components/ui/Select';
 import { useAuthStore } from '@/stores';
 import { apiClient } from '@/services/api/client';
 import { usageSummaryApi, type UsageSummary } from '@/services/api/usageSummary';
+import { callerDevice } from '../utils';
 import {
   localDateValue,
   presetUsageDates,
@@ -48,10 +49,16 @@ export function ModelUsage({ refreshSignal = 0 }: { refreshSignal?: number }) {
       : [];
   const ipOptions = [
     { value: '', label: t('dashboard_usage.all_ips') },
-    ...Array.from(new Set([...availableIPs, ...(clientIP ? [clientIP] : [])])).map((ip) => ({
-      value: ip,
-      label: ip,
-    })),
+    ...Array.from(new Set([...availableIPs, ...(clientIP ? [clientIP] : [])])).map((ip) => {
+      const device = callerDevice(ip);
+      return {
+        value: ip,
+        label: t('dashboard_usage.caller_label', {
+          name: device === 'macbook' ? 'macbook' : t(`dashboard_usage.caller_${device}`),
+          ip,
+        }),
+      };
+    }),
   ];
 
   const refresh = useCallback(() => setRefreshVersion((value) => value + 1), []);

@@ -2342,6 +2342,9 @@
     "reasoning_detail": "Bao gồm {{count}} token suy luận",
     "unclassified": "{{count}} chưa phân loại",
     "client_ip": "IP gọi",
-    "all_ips": "Tất cả IP gọi"
+    "all_ips": "Tất cả IP gọi",
+    "caller_local": "Máy này",
+    "caller_unknown": "Không xác định",
+    "caller_label": "{{name}} ({{ip}})"
   }
 }

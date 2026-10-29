@@ -3,11 +3,35 @@ import { formatCompactNumber, formatPercent } from '../src/utils/format';
 import { getProviderKeyCounts } from '../src/features/dashboard/hooks/useDashboardOverview';
 import {
   axisMax,
+  callerDevice,
   niceCeil,
   providerLabel,
   splitWindowMinutes,
   toneForSuccessRate,
 } from '../src/features/dashboard/utils';
+
+describe('caller device names', () => {
+  test('recognizes local IPv4, IPv6 and mapped loopback addresses', () => {
+    for (const ip of [
+      '127.0.0.1',
+      '127.0.0.2',
+      '::1',
+      '0:0:0:0:0:0:0:1',
+      '::ffff:127.0.0.1',
+      '::ffff:7f00:1',
+    ]) {
+      expect(callerDevice(ip)).toBe('local');
+    }
+  });
+
+  test('names only the configured MacBook address', () => {
+    expect(callerDevice('192.168.31.26')).toBe('macbook');
+    expect(callerDevice('::ffff:192.168.31.26')).toBe('macbook');
+    for (const ip of ['192.168.31.27', '10.0.0.1', '2001:db8::1', '127.0.0.999', '7f00:1', '']) {
+      expect(callerDevice(ip)).toBe('unknown');
+    }
+  });
+});
 
 describe('formatCompactNumber', () => {
   test('leaves values below one thousand alone', () => {

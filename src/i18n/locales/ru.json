@@ -2330,6 +2330,9 @@
     "reasoning_detail": "Включает {{count}} токенов рассуждений",
     "unclassified": "Не классифицировано: {{count}}",
     "client_ip": "IP клиента",
-    "all_ips": "Все IP клиентов"
+    "all_ips": "Все IP клиентов",
+    "caller_local": "Этот компьютер",
+    "caller_unknown": "Неизвестно",
+    "caller_label": "{{name}} ({{ip}})"
   }
 }

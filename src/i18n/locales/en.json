@@ -2336,6 +2336,9 @@
     "reasoning_detail": "Includes {{count}} reasoning tokens",
     "unclassified": "{{count}} unclassified",
     "client_ip": "Caller IP",
-    "all_ips": "All caller IPs"
+    "all_ips": "All caller IPs",
+    "caller_local": "Local",
+    "caller_unknown": "Unknown",
+    "caller_label": "{{name}} ({{ip}})"
   }
 }
