@@ -1,0 +1,96 @@
+/* Only the quota list consumes this skin. Shared plan badges retain their original styles. */
+.quotaRow {
+  gap: 8px;
+  align-self: start;
+  order: 1;
+}
+
+.quotaRowHeader {
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.quotaModel {
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.quotaMeta {
+  flex-wrap: wrap;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.quotaPercent {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.quotaReset,
+.quotaResetRelative {
+  color: var(--text-tertiary);
+}
+
+.quotaResetRelativeSoon {
+  color: var(--warning-text);
+}
+
+.quotaBar {
+  height: 4px;
+}
+
+.codexPlan {
+  grid-column: 1 / -1;
+  gap: 4px 10px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.codexResetCredits {
+  order: 2;
+  gap: 5px;
+  padding-top: 0;
+  min-width: 0;
+}
+
+.codexResetCreditsTitle {
+  font-weight: 400;
+}
+
+.codexResetCreditRow {
+  justify-content: flex-start;
+  gap: 3px 6px;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.codexResetCreditTime {
+  margin-left: 0;
+  white-space: normal;
+  text-align: left;
+  font-weight: 400;
+}
+
+.codexResetCreditsError,
+.quotaMessage {
+  grid-column: 1 / -1;
+}
+
+.antigravityQuotaGroup {
+  order: 1;
+  min-width: 0;
+
+  & + & {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+
+.antigravityQuotaGroupDescription {
+  overflow-wrap: anywhere;
+}

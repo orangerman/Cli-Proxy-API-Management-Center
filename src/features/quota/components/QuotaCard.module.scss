@@ -1,32 +1,15 @@
 @use '../../../styles/mixins' as *;
 
-/* ============================================================
- * 额度卡片 — 继承凭证卡 statTile 配方（14px 圆角 / 1px 边框 / 82% 透感纸面）。
- * 提供商身份只由图标承载（混合网格下五色渐变卡底会互相打架，已退役）。
- * 遥测内容一律 mono + tabular-nums。
- * ============================================================ */
-
+/* Each credential is one quiet row, with windows aligned across the provider list. */
 .card {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 11px;
-  padding: 15px 16px;
-  border-radius: 14px;
-  border: 1px solid var(--border-color);
-  background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
-  transition:
-    transform var(--dur-hover, 200ms) var(--ease-out-strong, ease-out),
-    border-color var(--dur-hover, 200ms) var(--ease-out-strong, ease-out),
-    box-shadow var(--dur-hover, 200ms) var(--ease-out-strong, ease-out);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .card:hover {
-    transform: translateY(-2px);
-    border-color: var(--border-hover);
-    box-shadow: 0 12px 26px -14px rgb(0 0 0 / 0.16);
-  }
+  display: grid;
+  grid-template-columns: minmax(180px, 1.35fr) minmax(0, 3fr) auto;
+  align-items: center;
+  gap: 24px;
+  min-height: 100px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 /* 首次数据到达时的一次性级联入场；切 tab / 翻页 / 刷新不重播 */
@@ -46,9 +29,18 @@
 
 .head {
   display: flex;
-  align-items: center;
-  gap: 9px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
   min-width: 0;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
 }
 
 .iconWrap {
@@ -56,8 +48,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
   border-radius: 8px;
   background: color-mix(in srgb, var(--bg-tertiary) 60%, transparent);
 }
@@ -78,7 +70,7 @@
 .fileName {
   min-width: 0;
   font-family: $font-mono;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--text-primary);
@@ -88,9 +80,10 @@
 /* ---------- body 容器 ---------- */
 
 .body {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 18px 24px;
   min-width: 0;
 }
 
@@ -103,10 +96,11 @@
   justify-content: center;
   gap: 6px;
   width: 100%;
-  min-height: 76px;
+  grid-column: 1 / -1;
+  min-height: 50px;
   padding: 12px 10px;
   cursor: pointer;
-  border: 1px dashed var(--border-color);
+  border: 0;
   border-radius: 10px;
   background: none;
   color: var(--text-tertiary);
@@ -153,6 +147,7 @@
 /* ---------- loading：双幽灵行骨架 ---------- */
 
 .skeleton {
+  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
   gap: 11px;
@@ -216,6 +211,7 @@
 /* ---------- error ---------- */
 
 .errorStrip {
+  grid-column: 1 / -1;
   font-size: 11.5px;
   line-height: 1.5;
   color: var(--viz-failure);
@@ -231,8 +227,9 @@
 .actionRow {
   display: flex;
   justify-content: flex-end;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 8px;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 /* 安静描边药丸（与凭证卡图标动作同族：hover 才显色块） */
@@ -241,12 +238,12 @@
   align-items: center;
   gap: 5px;
   cursor: pointer;
-  border: 1px solid var(--border-color);
-  border-radius: $radius-full;
+  border: 1px solid transparent;
+  border-radius: 6px;
   background: none;
-  padding: 5px 11px;
+  padding: 6px 8px;
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.4;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -306,5 +303,65 @@
   .skeletonTrack,
   .spinning {
     animation: none;
+  }
+}
+
+/* Use the available content width, including when the app sidebar is expanded. */
+@container quota-workbench (max-width: 1050px) {
+  .card {
+    grid-template-columns: minmax(160px, 1fr) minmax(0, 2.5fr);
+    gap: 14px 24px;
+  }
+
+  .head {
+    grid-row: 1 / span 2;
+  }
+
+  .actionRow {
+    grid-column: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+@container quota-workbench (max-width: 740px) {
+  .card {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+  }
+
+  .head {
+    grid-row: 1;
+  }
+
+  .body {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .actionRow {
+    grid-column: 2;
+    grid-row: 1;
+    flex-direction: column;
+  }
+}
+
+@container quota-workbench (max-width: 420px) {
+  .card {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 20px 0;
+  }
+
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .actionRow {
+    grid-column: 1;
+    grid-row: 3;
+    flex-direction: row;
+    justify-content: flex-start;
   }
 }

@@ -11,7 +11,7 @@ import { beforeAll, describe, expect, test } from 'bun:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import i18n from '@/i18n';
-import { CodexQuotaBody } from '@/features/quota/providers/codex/CodexQuotaBody';
+import { CodexQuotaBody, CodexQuotaPlan } from '@/features/quota/providers/codex/CodexQuotaBody';
 import { ClaudeQuotaBody } from '@/features/quota/providers/claude/ClaudeQuotaBody';
 import { KimiQuotaBody } from '@/features/quota/providers/kimi/KimiQuotaBody';
 import { QUOTA_CLASS_KEYS, bindQuotaClasses } from '@/features/quota/types';
@@ -129,6 +129,39 @@ describe('CodexQuotaBody', () => {
     expect(markup).toMatch(/3 hours/);
   });
 
+  test('list layout separates identity from usage and places the reset below its meter', () => {
+    const identity = renderToStaticMarkup(
+      createElement(CodexQuotaPlan, { quota, classes, layout: 'list' })
+    );
+    const usage = renderToStaticMarkup(
+      createElement(CodexQuotaBody, { quota, classes, layout: 'list' })
+    );
+    expect(identity).toContain('elitePlanValue');
+    expect(identity).not.toContain('Manual resets');
+    expect(usage).not.toContain('elitePlanValue');
+    expect(usage).toContain('Manual resets');
+    expect(usage).toContain('62%');
+    expect(usage.indexOf('08-02 18:00')).toBeGreaterThan(usage.indexOf('class="quotaBar"'));
+  });
+
+  test('list layout retains a zero reset count and a failed expiry read', () => {
+    const markup = renderToStaticMarkup(
+      createElement(CodexQuotaBody, {
+        quota: {
+          ...quota,
+          rateLimitResetCredits: [],
+          rateLimitResetCreditsAvailableCount: 0,
+          rateLimitResetCreditsError: 'Unavailable',
+        },
+        classes,
+        layout: 'list',
+      })
+    );
+    expect(markup).toContain('Manual resets');
+    expect(markup).toContain('class="quotaPercent">0</div>');
+    expect(markup).toContain('Unavailable');
+  });
+
   test('renders reset-credit expiry in local time with a countdown', () => {
     const markup = renderToStaticMarkup(createElement(CodexQuotaBody, { quota, classes }));
 
@@ -228,6 +261,25 @@ describe('KimiQuotaBody', () => {
 });
 
 describe('ClaudeQuotaBody', () => {
+  test('list layout keeps usage under a separate identity and preserves stale notices', () => {
+    const markup = renderToStaticMarkup(
+      createElement(ClaudeQuotaBody, {
+        quota: {
+          status: 'success',
+          stale: true,
+          planType: 'max',
+          windows: [{ id: 'five_hour', label: '5-hour', usedPercent: 42, resetLabel: 'Later' }],
+        },
+        classes,
+        layout: 'list',
+      })
+    );
+    expect(markup).not.toContain('class="codexPlan"');
+    expect(markup).toContain('role="status"');
+    expect(markup).toContain('58%');
+    expect(markup.indexOf('Later')).toBeGreaterThan(markup.indexOf('class="quotaBar"'));
+  });
+
   test('pairs each window reset with a countdown', () => {
     const quota: ClaudeQuotaState = {
       status: 'success',

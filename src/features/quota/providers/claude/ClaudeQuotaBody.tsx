@@ -17,6 +17,7 @@ export function ClaudeQuotaBody({
   classes,
   planItems,
   afterPlan,
+  layout,
 }: QuotaBodyProps<ClaudeQuotaState>) {
   const { t, i18n } = useTranslation();
   const now = useNow();
@@ -59,7 +60,7 @@ export function ClaudeQuotaBody({
           })}
         </div>
       )}
-      {(planType || planItems) && (
+      {layout !== 'list' && (planType || planItems) && (
         <div className={classes.codexPlan}>
           {planType && (
             <span className={classes.codexPlanItem}>
@@ -184,12 +185,17 @@ export function ClaudeQuotaBody({
                 <span className={classes.quotaModel}>{windowLabel}</span>
                 <div className={classes.quotaMeta}>
                   <span className={classes.quotaPercent}>{percentLabel}</span>
-                  {resetDisplay && (
+                  {layout !== 'list' && resetDisplay && (
                     <QuotaResetLabel display={resetDisplay} classes={classes} soon={soon} />
                   )}
                 </div>
               </div>
               <QuotaMeter percent={remaining} classes={classes} index={index} />
+              {layout === 'list' && resetDisplay && (
+                <div className={classes.quotaMeta}>
+                  <QuotaResetLabel display={resetDisplay} classes={classes} soon={soon} />
+                </div>
+              )}
             </div>
           );
         })

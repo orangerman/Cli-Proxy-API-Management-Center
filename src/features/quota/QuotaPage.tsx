@@ -1,5 +1,5 @@
 /**
- * 额度查询页：提供商 tabs + 统一卡网格。
+ * 额度查询页：提供商导航 + 分组凭证列表。
  *
  * 保留的行为契约（重设计不改）：
  * - 现有提供商保持点击加载；Devin 首次可见时主动查询一次，不轮询；
@@ -23,6 +23,7 @@ import { useAuthStore, useQuotaStore, useThemeStore } from '@/stores';
 import type { AuthFileItem, ResolvedTheme } from '@/types';
 import { getQuotaCacheKey } from '@/utils/quota/identity';
 import { ProviderTabs } from '@/features/authFiles/components/ProviderTabs';
+import { getTypeLabel } from '@/features/authFiles/constants';
 import { QuotaHeader } from './components/QuotaHeader';
 import { QuotaCard } from './components/QuotaCard';
 import { QuotaTimeline } from './components/QuotaTimeline';
@@ -41,6 +42,7 @@ import {
   filterEntriesByTab,
   filterEntriesBySearch,
   paginate,
+  groupQuotaEntries,
   sortQuotaEntries,
   type QuotaFileEntry,
 } from './logic';
@@ -197,6 +199,7 @@ export function QuotaPage() {
     () => paginate(sortedEntries, page, QUOTA_PAGE_SIZE),
     [sortedEntries, page]
   );
+  const providerGroups = useMemo(() => groupQuotaEntries(pageItems), [pageItems]);
 
   const handleTabChange = useCallback((next: string) => {
     setTab(next as QuotaTabId);
@@ -391,9 +394,9 @@ export function QuotaPage() {
         )}
 
         {loading ? (
-          <div className={styles.grid} aria-hidden="true">
+          <div className={styles.list} aria-hidden="true">
             {Array.from({ length: SKELETON_CARD_COUNT }, (_, index) => (
-              <Skeleton key={index} height={168} rounded={14} />
+              <Skeleton key={index} height={100} rounded={4} />
             ))}
           </div>
         ) : isEmpty ? (
@@ -425,19 +428,34 @@ export function QuotaPage() {
             }
           />
         ) : (
-          <div className={styles.grid}>
-            {pageItems.map((entry, index) => (
-              <QuotaCard
-                key={`${entry.type}:${getQuotaCacheKey(entry.file)}`}
-                entry={entry}
-                quota={getQuota(entry)}
-                resolvedTheme={resolvedTheme}
-                canRefresh={canUseActions && !entry.file.disabled}
-                resetting={resettingQuotaName === getQuotaCacheKey(entry.file)}
-                entranceDelayMs={cardEntranceDelay(index)}
-                onRefresh={() => void refreshQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
-                onReset={() => resetQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
-              />
+          <div className={styles.list}>
+            {providerGroups.map((group) => (
+              <section
+                key={`${group.type}:${group.startIndex}`}
+                className={styles.providerGroup}
+                aria-labelledby={`quota-group-${group.type}-${group.startIndex}`}
+              >
+                <h2
+                  id={`quota-group-${group.type}-${group.startIndex}`}
+                  className={styles.providerHeading}
+                >
+                  {getTypeLabel(t, group.type)}
+                  <span className={styles.providerCount}>{group.entries.length}</span>
+                </h2>
+                {group.entries.map((entry, index) => (
+                  <QuotaCard
+                    key={`${entry.type}:${getQuotaCacheKey(entry.file)}`}
+                    entry={entry}
+                    quota={getQuota(entry)}
+                    resolvedTheme={resolvedTheme}
+                    canRefresh={canUseActions && !entry.file.disabled}
+                    resetting={resettingQuotaName === getQuotaCacheKey(entry.file)}
+                    entranceDelayMs={cardEntranceDelay(group.startIndex + index)}
+                    onRefresh={() => void refreshQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
+                    onReset={() => resetQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
+                  />
+                ))}
+              </section>
             ))}
           </div>
         )}

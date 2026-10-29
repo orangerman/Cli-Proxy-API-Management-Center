@@ -100,6 +100,8 @@ export function bindQuotaClasses(module: Record<string, string>, source: string)
 
 export interface QuotaBodyProps<TState> {
   quota: TState;
+  /** The quota page uses horizontal windows; auth-file cards keep their compact layout. */
+  layout?: 'list';
   classes: QuotaClassMap;
   /** Host-owned chips appended to the provider's plan row (`codexPlanItem` spans). */
   planItems?: ReactNode;

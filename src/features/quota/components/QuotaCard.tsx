@@ -6,7 +6,7 @@
 import { useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconRefreshCw } from '@/components/ui/icons';
-import type { ClaudeQuotaState, ResolvedTheme } from '@/types';
+import type { ClaudeQuotaState, CodexQuotaState, ResolvedTheme } from '@/types';
 import { resolveQuotaErrorMessage } from '@/utils/quota';
 import { getQuotaDisplayName } from '@/utils/quota/identity';
 import {
@@ -21,11 +21,21 @@ import { isQuotaRefreshDisabled, type QuotaFileEntry } from '../logic';
 import { useClaudeResetGrants } from '../providers/claude/ClaudeResetGrants';
 import { ClaudeResetGrantDetails } from '../providers/claude/ClaudeResetGrantDetails';
 import { hasClaudeUsageData } from '../providers/claude/data';
+import { CodexQuotaPlan } from '../providers/codex/CodexQuotaBody';
 import bodyStyles from './QuotaBody.module.scss';
+import listStyles from './QuotaListBody.module.scss';
 import styles from './QuotaCard.module.scss';
 
 /** Bind the quota-page styles to the shared rendering contract. */
-const quotaClasses = bindQuotaClasses(bodyStyles, 'QuotaBody.module.scss');
+const quotaClasses = bindQuotaClasses(
+  Object.fromEntries(
+    Object.entries(bodyStyles).map(([key, value]) => [
+      key,
+      `${value} ${listStyles[key] ?? ''}`.trim(),
+    ])
+  ),
+  'QuotaBody.module.scss'
+);
 
 export type QuotaCardProps = {
   entry: QuotaFileEntry;
@@ -116,24 +126,39 @@ export function QuotaCard(props: QuotaCardProps) {
       style={entranceStyle}
     >
       <header className={styles.head}>
-        <span
-          className={styles.iconWrap}
-          title={typeLabel}
-          style={
-            isThemeSurfaceIconProvider(providerType)
-              ? { background: getThemeSurfaceIconBackground(resolvedTheme) }
-              : undefined
-          }
-        >
-          {iconSrc ? (
-            <img src={iconSrc} alt="" className={styles.icon} />
-          ) : (
-            <span className={styles.iconFallback}>{typeLabel.slice(0, 1).toUpperCase()}</span>
-          )}
-        </span>
-        <span className={styles.fileName} title={displayName}>
-          {displayName}
-        </span>
+        <div className={styles.identity}>
+          <span
+            className={styles.iconWrap}
+            title={typeLabel}
+            style={
+              isThemeSurfaceIconProvider(providerType)
+                ? { background: getThemeSurfaceIconBackground(resolvedTheme) }
+                : undefined
+            }
+          >
+            {iconSrc ? (
+              <img src={iconSrc} alt="" className={styles.icon} />
+            ) : (
+              <span className={styles.iconFallback}>{typeLabel.slice(0, 1).toUpperCase()}</span>
+            )}
+          </span>
+          <span className={styles.fileName} title={displayName}>
+            {displayName}
+          </span>
+        </div>
+        {entry.type === 'codex' && quota && (
+          <CodexQuotaPlan quota={quota as CodexQuotaState} classes={quotaClasses} layout="list" />
+        )}
+        {entry.type === 'claude' && quota && (
+          <div className={quotaClasses.codexPlan}>
+            {(quota as ClaudeQuotaState).planType && (
+              <span className={quotaClasses.codexPlanValue}>
+                {t(`claude_quota.${(quota as ClaudeQuotaState).planType}`)}
+              </span>
+            )}
+            {claudePlanItems}
+          </div>
+        )}
       </header>
 
       <div className={styles.body}>
@@ -165,6 +190,7 @@ export function QuotaCard(props: QuotaCardProps) {
           <adapter.Body
             quota={quota}
             classes={quotaClasses}
+            layout="list"
             planItems={claudePlanItems}
             afterPlan={claudeAfterPlan}
           />
@@ -180,6 +206,7 @@ export function QuotaCard(props: QuotaCardProps) {
           <adapter.Body
             quota={quota}
             classes={quotaClasses}
+            layout="list"
             planItems={claudePlanItems}
             afterPlan={claudeAfterPlan}
           />

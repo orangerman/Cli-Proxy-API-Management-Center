@@ -154,10 +154,7 @@ export function ProvidersWorkbenchPage({ fixedBrand }: ProvidersWorkbenchPagePro
 
   const allGroups = useMemo(() => workbench.snapshot?.groups ?? [], [workbench.snapshot]);
   const groups = useMemo(
-    () =>
-      fixedBrand
-        ? allGroups.filter((group) => group.id === fixedBrand)
-        : allGroups.filter((group) => group.id !== 'apikeyFun'),
+    () => (fixedBrand ? allGroups.filter((group) => group.id === fixedBrand) : allGroups),
     [allGroups, fixedBrand]
   );
   const firstVisibleBrand = groups[0]?.id ?? fixedBrand ?? 'gemini';

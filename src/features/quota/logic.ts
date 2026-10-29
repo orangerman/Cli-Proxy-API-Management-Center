@@ -127,6 +127,17 @@ export function buildTabCounts(entries: QuotaFileEntry[]): Record<string, number
   return counts;
 }
 
+/** Group adjacent providers without changing the global recovery sort or pagination. */
+export function groupQuotaEntries(entries: QuotaFileEntry[]) {
+  const groups: { type: QuotaProviderType; entries: QuotaFileEntry[]; startIndex: number }[] = [];
+  entries.forEach((entry, index) => {
+    const previous = groups[groups.length - 1];
+    if (previous?.type === entry.type) previous.entries.push(entry);
+    else groups.push({ type: entry.type, entries: [entry], startIndex: index });
+  });
+  return groups;
+}
+
 export const isQuotaRefreshDisabled = (
   canRefresh: boolean,
   loading: boolean,

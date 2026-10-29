@@ -31,24 +31,15 @@ const getPlanValueClass = (planType: string | null, classes: QuotaClassMap): str
   return classes.codexPlanValue;
 };
 
-export function CodexQuotaBody({ quota, classes }: QuotaBodyProps<CodexQuotaState>) {
+export function CodexQuotaPlan({ quota, classes, layout }: QuotaBodyProps<CodexQuotaState>) {
   const { t, i18n } = useTranslation();
   const now = useNow();
   const locale = i18n.resolvedLanguage;
-  // Windows and reset credits compete for the same emphasis, but only during
-  // the final hour before the reset or expiry.
-  const soonestRowId = useMemo(
-    () => pickUrgentRowId(collectQuotaRowInstants('codex', quota), now),
-    [quota, now]
-  );
-  const windows = quota.windows ?? [];
   const planType = quota.planType ?? null;
   const subscriptionActiveUntil = quota.subscriptionActiveUntil ?? null;
   const creditBalance = quota.creditBalance ?? null;
   const creditsUnlimited = quota.creditsUnlimited === true;
   const rateLimitResetCreditsAvailableCount = quota.rateLimitResetCreditsAvailableCount ?? null;
-  const rateLimitResetCredits = quota.rateLimitResetCredits ?? [];
-  const rateLimitResetCreditsError = quota.rateLimitResetCreditsError ?? '';
 
   const getPlanLabel = (pt?: string | null): string | null => {
     const normalized = normalizePlanType(pt);
@@ -115,7 +106,7 @@ export function CodexQuotaBody({ quota, classes }: QuotaBodyProps<CodexQuotaStat
               </span>
             </span>
           )}
-          {rateLimitResetCreditsAvailableCount !== null && (
+          {layout !== 'list' && rateLimitResetCreditsAvailableCount !== null && (
             <span className={classes.codexPlanItem}>
               <span className={classes.codexPlanLabel}>{t('codex_quota.reset_credits_label')}</span>
               <span className={classes.codexPlanValue}>
@@ -125,11 +116,42 @@ export function CodexQuotaBody({ quota, classes }: QuotaBodyProps<CodexQuotaStat
           )}
         </div>
       )}
-      {rateLimitResetCredits.length > 0 ? (
+    </>
+  );
+}
+
+export function CodexQuotaBody({ quota, classes, layout }: QuotaBodyProps<CodexQuotaState>) {
+  const { t, i18n } = useTranslation();
+  const now = useNow();
+  const locale = i18n.resolvedLanguage;
+  const soonestRowId = useMemo(
+    () => pickUrgentRowId(collectQuotaRowInstants('codex', quota), now),
+    [quota, now]
+  );
+  const windows = quota.windows ?? [];
+  const rateLimitResetCredits = quota.rateLimitResetCredits ?? [];
+  const rateLimitResetCreditsError = quota.rateLimitResetCreditsError ?? '';
+  const resetCount = quota.rateLimitResetCreditsAvailableCount ?? null;
+  const showListResetCount = layout === 'list' && resetCount !== null;
+
+  return (
+    <>
+      {layout !== 'list' && <CodexQuotaPlan quota={quota} classes={classes} />}
+      {rateLimitResetCredits.length > 0 || showListResetCount ? (
         <div className={classes.codexResetCredits}>
-          <div className={classes.codexResetCreditsTitle}>
-            {t('codex_quota.reset_credits_expiry_label', { timezone: resolveTimeZoneLabel() })}
-          </div>
+          {showListResetCount && (
+            <>
+              <div className={classes.codexResetCreditsTitle}>
+                {t('codex_quota.reset_credits_label')}
+              </div>
+              <div className={classes.quotaPercent}>{resetCount}</div>
+            </>
+          )}
+          {rateLimitResetCredits.length > 0 && (
+            <div className={classes.codexResetCreditsTitle}>
+              {t('codex_quota.reset_credits_expiry_label', { timezone: resolveTimeZoneLabel() })}
+            </div>
+          )}
           {rateLimitResetCredits.map((credit, index) => {
             const expiresAtMs = parseIsoToMs(credit.expiresAt);
             const expiresDisplay = buildResetDisplay(
@@ -163,6 +185,13 @@ export function CodexQuotaBody({ quota, classes }: QuotaBodyProps<CodexQuotaStat
               </div>
             );
           })}
+          {rateLimitResetCreditsError && (
+            <div className={classes.codexResetCreditsError}>
+              {t('codex_quota.reset_credits_expiry_failed', {
+                message: rateLimitResetCreditsError,
+              })}
+            </div>
+          )}
         </div>
       ) : rateLimitResetCreditsError ? (
         <div className={classes.codexResetCreditsError}>
@@ -197,12 +226,17 @@ export function CodexQuotaBody({ quota, classes }: QuotaBodyProps<CodexQuotaStat
                 <span className={classes.quotaModel}>{windowLabel}</span>
                 <div className={classes.quotaMeta}>
                   <span className={classes.quotaPercent}>{percentLabel}</span>
-                  {resetDisplay && (
+                  {layout !== 'list' && resetDisplay && (
                     <QuotaResetLabel display={resetDisplay} classes={classes} soon={soon} />
                   )}
                 </div>
               </div>
               <QuotaMeter percent={remaining} classes={classes} index={index} />
+              {layout === 'list' && resetDisplay && (
+                <div className={classes.quotaMeta}>
+                  <QuotaResetLabel display={resetDisplay} classes={classes} soon={soon} />
+                </div>
+              )}
             </div>
           );
         })
