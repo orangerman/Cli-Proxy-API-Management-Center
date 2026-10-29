@@ -2313,7 +2313,6 @@
   },
   "dashboard_usage": {
     "title": "Model usage & cost",
-    "description": "Token usage by model for your selected period. Costs use official API list prices.",
     "period": "Reporting period",
     "period_today": "Today",
     "period_7d": "Last 7 days",
@@ -2336,12 +2335,7 @@
     "empty": "No saved usage in this period.",
     "reasoning_detail": "Includes {{count}} reasoning tokens",
     "unclassified": "{{count}} unclassified",
-    "accounting_note": "Input includes cached tokens; output includes reasoning. Cache and reasoning figures are breakdowns and are not added again to total tokens.",
-    "history_note": "History begins after installing the updated backend and enabling usage statistics. Earlier usage cannot be reconstructed. Dates use your local timezone.",
-    "history_start": "History available from {{date}} (UTC)",
-    "pricing_note": "Official price snapshot: {{date}}. Token estimates use standard cache TTLs, with known long-context and service-tier rates. Tools, cache storage, regional surcharges and subscriptions are excluded. Unknown prices are excluded from the subtotal. Sources:",
     "client_ip": "Caller IP",
-    "all_ips": "All caller IPs",
-    "ip_note": "IP filtering uses the caller address resolved through trusted proxy settings. Only requests recorded with an IP can be filtered; devices sharing a public IP are combined."
+    "all_ips": "All caller IPs"
   }
 }

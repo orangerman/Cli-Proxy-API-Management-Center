@@ -2311,7 +2311,6 @@
   },
   "dashboard_usage": {
     "title": "模型用量与花费",
-    "description": "查看所选周期内各模型的 Token 用量，按厂商公开 API 价格估算费用。",
     "period": "统计周期",
     "period_today": "今天",
     "period_7d": "近 7 天",
@@ -2334,12 +2333,7 @@
     "empty": "此周期内暂无已保存的用量记录。",
     "reasoning_detail": "其中包含 {{count}} 个推理 Token",
     "unclassified": "{{count}} 个未分类",
-    "accounting_note": "输入已包含缓存 Token，输出已包含推理 Token；缓存和推理是明细，不会重复计入总 Token。",
-    "history_note": "从更新后端并启用用量统计后开始保存记录，无法还原此前的用量；日期按本地时区筛选。",
-    "history_start": "历史记录起始于 {{date}}（UTC）",
-    "pricing_note": "官方价格核对日期：{{date}}。按标准缓存时长估算，已计入已知的长上下文和服务档位费率；不含工具、缓存存储、区域附加费及订阅费。未知价格不计入费用小计。来源：",
     "client_ip": "调用 IP",
-    "all_ips": "所有调用 IP",
-    "ip_note": "IP 筛选使用可信代理配置解析出的调用地址，仅适用于开始记录 IP 之后的请求；同一公网 IP 下的设备会合并统计。"
+    "all_ips": "所有调用 IP"
   }
 }

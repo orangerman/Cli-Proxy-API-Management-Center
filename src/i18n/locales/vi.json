@@ -2319,7 +2319,6 @@
   },
   "dashboard_usage": {
     "title": "Mức sử dụng và chi phí theo mô hình",
-    "description": "Token theo mô hình trong khoảng thời gian đã chọn, ước tính theo giá API chính thức.",
     "period": "Kỳ báo cáo",
     "period_today": "Hôm nay",
     "period_7d": "7 ngày qua",
@@ -2342,12 +2341,7 @@
     "empty": "Không có lịch sử đã lưu trong kỳ này.",
     "reasoning_detail": "Bao gồm {{count}} token suy luận",
     "unclassified": "{{count}} chưa phân loại",
-    "accounting_note": "Đầu vào đã bao gồm token bộ nhớ đệm; đầu ra đã bao gồm suy luận. Các chi tiết này không cộng lại vào tổng token.",
-    "history_note": "Lịch sử bắt đầu sau khi cập nhật máy chủ và bật thống kê. Không thể khôi phục dữ liệu trước đó. Ngày theo múi giờ địa phương.",
-    "history_start": "Có lịch sử từ {{date}} (UTC)",
-    "pricing_note": "Ngày kiểm tra giá: {{date}}. Ước tính với thời hạn bộ nhớ đệm tiêu chuẩn và mức giá ngữ cảnh dài, cấp dịch vụ đã biết. Không gồm công cụ, lưu trữ, phụ phí khu vực hoặc thuê bao. Yêu cầu chưa có giá không tính vào tổng phụ. Nguồn:",
     "client_ip": "IP gọi",
-    "all_ips": "Tất cả IP gọi",
-    "ip_note": "Bộ lọc dùng địa chỉ được xác định qua cấu hình proxy tin cậy. Chỉ lọc được yêu cầu đã lưu IP; các thiết bị dùng chung IP công cộng được gộp lại."
+    "all_ips": "Tất cả IP gọi"
   }
 }

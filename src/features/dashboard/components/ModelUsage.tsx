@@ -14,13 +14,6 @@ import {
 } from '../usageRange';
 import styles from './ModelUsage.module.scss';
 
-const PRICE_SOURCES = [
-  ['OpenAI', 'https://developers.openai.com/api/docs/pricing'],
-  ['Anthropic', 'https://platform.claude.com/docs/en/about-claude/pricing'],
-  ['Google', 'https://ai.google.dev/gemini-api/docs/pricing'],
-  ['xAI', 'https://docs.x.ai/developers/pricing'],
-] as const;
-
 export function ModelUsage({ refreshSignal = 0 }: { refreshSignal?: number }) {
   const { t, i18n } = useTranslation();
   const connected = useAuthStore((state) => state.connectionStatus === 'connected');
@@ -123,10 +116,7 @@ export function ModelUsage({ refreshSignal = 0 }: { refreshSignal?: number }) {
   return (
     <section className={styles.section} aria-labelledby="model-usage-title" aria-busy={loading}>
       <header className={styles.header}>
-        <div>
-          <h1 id="model-usage-title">{t('dashboard_usage.title')}</h1>
-          <p>{t('dashboard_usage.description')}</p>
-        </div>
+        <h1 id="model-usage-title">{t('dashboard_usage.title')}</h1>
         <button
           className={styles.refresh}
           type="button"
@@ -278,23 +268,6 @@ export function ModelUsage({ refreshSignal = 0 }: { refreshSignal?: number }) {
           </tbody>
         </table>
       </div>
-      <footer className={styles.footer}>
-        <p>{t('dashboard_usage.accounting_note')}</p>
-        <p>
-          {t('dashboard_usage.history_note')}
-          {data?.historyStart &&
-            ` · ${t('dashboard_usage.history_start', { date: data.historyStart })}`}
-        </p>
-        <p>{t('dashboard_usage.ip_note')}</p>
-        <p>
-          {t('dashboard_usage.pricing_note', { date: data?.pricingDate || dash })}{' '}
-          {PRICE_SOURCES.map(([name, url]) => (
-            <a key={name} href={url} target="_blank" rel="noreferrer">
-              {name}
-            </a>
-          ))}
-        </p>
-      </footer>
     </section>
   );
 }
