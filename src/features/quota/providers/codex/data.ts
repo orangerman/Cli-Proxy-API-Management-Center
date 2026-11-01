@@ -424,18 +424,12 @@ const fetchCodexQuota = async (file: AuthFileItem, t: TFunction): Promise<CodexQ
 
   const planTypeFromFile = resolveCodexPlanType(file);
   const subscriptionActiveUntilFromFile = resolveCodexSubscriptionActiveUntil(file);
-  const accountId = resolveCodexChatgptAccountId(file);
-  const requestHeader = buildCodexRequestHeader(file);
-
-  const [result, liveSubscriptionActiveUntil] = await Promise.all([
-    apiCallApi.request({
-      authIndex,
-      method: 'GET',
-      url: CODEX_USAGE_URL,
-      header: requestHeader,
-    }),
-    fetchCodexSubscriptionActiveUntil(authIndex, accountId, requestHeader),
-  ]);
+  const result = await apiCallApi.request({
+    authIndex,
+    method: 'GET',
+    url: CODEX_USAGE_URL,
+    header: buildCodexRequestHeader(file),
+  });
 
   if (result.statusCode < 200 || result.statusCode >= 300) {
     throw createStatusError(getApiCallErrorMessage(result), result.statusCode);
@@ -450,30 +444,49 @@ const fetchCodexQuota = async (file: AuthFileItem, t: TFunction): Promise<CodexQ
   const accountCredits = normalizeCodexAccountCredits(payload.credits);
   const resetCredits = payload.rate_limit_reset_credits ?? payload.rateLimitResetCredits ?? null;
   const usageResetCreditsData = normalizeCodexResetCreditsPayload(resetCredits);
-  const resetCreditsData = await fetchCodexResetCredits(authIndex, requestHeader, t);
-  const resetCreditsCountFromDetails =
-    resetCreditsData.credits.length > 0 ? resetCreditsData.credits.length : null;
-  const rateLimitResetCreditsAvailableCount =
-    resetCreditsData.availableCount ??
-    resetCreditsCountFromDetails ??
-    usageResetCreditsData.availableCount;
-  const rateLimitResetCreditsApplicableAvailableCount =
-    usageResetCreditsData.applicableAvailableCount ??
-    resetCreditsData.applicableAvailableCount ??
-    rateLimitResetCreditsAvailableCount;
   const planType = planTypeFromUsage ?? planTypeFromFile;
-  const subscriptionActiveUntil = liveSubscriptionActiveUntil ?? subscriptionActiveUntilFromFile;
+  const subscriptionActiveUntil = subscriptionActiveUntilFromFile;
   const windows = buildCodexQuotaWindows(payload, t);
   return {
     planType,
     subscriptionActiveUntil,
     creditBalance: accountCredits.balance,
     creditsUnlimited: accountCredits.unlimited,
-    rateLimitResetCreditsAvailableCount,
-    rateLimitResetCreditsApplicableAvailableCount,
-    rateLimitResetCredits: resetCreditsData.credits,
-    rateLimitResetCreditsError: resetCreditsData.error,
+    rateLimitResetCreditsAvailableCount: usageResetCreditsData.availableCount,
+    rateLimitResetCreditsApplicableAvailableCount: usageResetCreditsData.applicableAvailableCount,
+    rateLimitResetCredits: usageResetCreditsData.credits,
+    rateLimitResetCreditsError: '',
     windows,
+  };
+};
+
+/** Optional details never hold up the usage windows. Both probes run concurrently. */
+const enrichCodexQuota = async (
+  file: AuthFileItem,
+  data: CodexQuotaData,
+  t: TFunction
+): Promise<CodexQuotaData> => {
+  const authIndex = normalizeAuthIndex(file['auth_index'] ?? file.authIndex);
+  if (!authIndex) return data;
+  const headers = buildCodexRequestHeader(file);
+  const [activeUntil, resetCredits] = await Promise.all([
+    fetchCodexSubscriptionActiveUntil(authIndex, resolveCodexChatgptAccountId(file), headers),
+    fetchCodexResetCredits(authIndex, headers, t),
+  ]);
+  const availableCount =
+    resetCredits.availableCount ??
+    (resetCredits.credits.length > 0 ? resetCredits.credits.length : null) ??
+    data.rateLimitResetCreditsAvailableCount;
+  return {
+    ...data,
+    subscriptionActiveUntil: activeUntil ?? data.subscriptionActiveUntil,
+    rateLimitResetCreditsAvailableCount: availableCount,
+    rateLimitResetCreditsApplicableAvailableCount:
+      data.rateLimitResetCreditsApplicableAvailableCount ??
+      resetCredits.applicableAvailableCount ??
+      availableCount,
+    rateLimitResetCredits: resetCredits.error ? data.rateLimitResetCredits : resetCredits.credits,
+    rateLimitResetCreditsError: resetCredits.error,
   };
 };
 
@@ -536,7 +549,7 @@ const resetCodexQuota = async (file: AuthFileItem, t: TFunction): Promise<CodexQ
     // Redemption already succeeded: direct the operator to the existing clear action.
     throw new Error(t('codex_quota.reset_cooldown_failed'));
   }
-  return fetchCodexQuota(file, t);
+  return enrichCodexQuota(file, await fetchCodexQuota(file, t), t);
 };
 
 export const CODEX_CONFIG: QuotaProviderData<CodexQuotaState, CodexQuotaData> = {
@@ -544,6 +557,7 @@ export const CODEX_CONFIG: QuotaProviderData<CodexQuotaState, CodexQuotaData> = 
   i18nPrefix: 'codex_quota',
   filterFn: (file) => isCodexFile(file) && !isDisabledAuthFile(file),
   fetchQuota: fetchCodexQuota,
+  enrichQuota: enrichCodexQuota,
   resetQuota: resetCodexQuota,
   canResetQuota: (quota) => (quota.rateLimitResetCreditsAvailableCount ?? 0) > 0,
   storeSelector: (state) => state.codexQuota,

@@ -150,8 +150,14 @@ describe('Codex account credits', () => {
       throw new Error(`Unexpected URL: ${payload.url}`);
     };
 
-    const data = await CODEX_CONFIG.fetchQuota(
+    const initial = await CODEX_CONFIG.fetchQuota(
       { name: 'codex.json', type: 'codex', auth_index: 'codex:1' },
+      t
+    );
+    expect(requests).toHaveLength(1);
+    const data = await CODEX_CONFIG.enrichQuota!(
+      { name: 'codex.json', type: 'codex', auth_index: 'codex:1' },
+      initial,
       t
     );
     const state = CODEX_CONFIG.buildSuccessState(data);
@@ -177,16 +183,15 @@ describe('Codex live subscription renewal', () => {
       throw new Error(`Unexpected URL: ${payload.url}`);
     };
 
-    const quota = await CODEX_CONFIG.fetchQuota(
-      {
-        name: 'codex.json',
-        type: 'codex',
-        auth_index: 'codex:1',
-        metadata: { chatgpt_account_id: 'account/id + space' },
-        chatgpt_subscription_active_until: '2026-09-03T13:27:01Z',
-      },
-      t
-    );
+    const file = {
+      name: 'codex.json',
+      type: 'codex',
+      auth_index: 'codex:1',
+      metadata: { chatgpt_account_id: 'account/id + space' },
+      chatgpt_subscription_active_until: '2026-09-03T13:27:01Z',
+    };
+    const initial = await CODEX_CONFIG.fetchQuota(file, t);
+    const quota = await CODEX_CONFIG.enrichQuota!(file, initial, t);
 
     expect(quota.subscriptionActiveUntil).toBe('2026-10-03T13:27:01Z');
     const subscriptionRequest = requests.find((request) =>
@@ -212,16 +217,15 @@ describe('Codex live subscription renewal', () => {
       throw new Error(`Unexpected URL: ${payload.url}`);
     };
 
-    const quota = await CODEX_CONFIG.fetchQuota(
-      {
-        name: 'codex.json',
-        type: 'codex',
-        auth_index: 'codex:2',
-        chatgpt_account_id: 'account-2',
-        chatgpt_subscription_active_until: '2026-09-03T13:27:01Z',
-      },
-      t
-    );
+    const file = {
+      name: 'codex.json',
+      type: 'codex',
+      auth_index: 'codex:2',
+      chatgpt_account_id: 'account-2',
+      chatgpt_subscription_active_until: '2026-09-03T13:27:01Z',
+    };
+    const initial = await CODEX_CONFIG.fetchQuota(file, t);
+    const quota = await CODEX_CONFIG.enrichQuota!(file, initial, t);
 
     expect(quota.subscriptionActiveUntil).toBe('2026-09-03T13:27:01Z');
   });
